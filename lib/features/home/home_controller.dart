@@ -9,7 +9,6 @@ class HomeController extends ChangeNotifier {
 
   final GetHomeMediaSections getHomeMediaSections;
 
-  List<MediaItem> continueWatching = [];
   List<MediaItem> trendingToday = [];
   List<MediaItem> popularMovies = [];
   List<MediaItem> popularTvShows = [];
@@ -21,7 +20,6 @@ class HomeController extends ChangeNotifier {
 
   bool get hasContent {
     return [
-      continueWatching,
       trendingToday,
       popularMovies,
       popularTvShows,
@@ -46,10 +44,7 @@ class HomeController extends ChangeNotifier {
     }
   }
 
-  Future<void> loadTrending() => loadHome();
-
   void _setSections(HomeMediaSections sections) {
-    continueWatching = sections.continueWatching;
     trendingToday = sections.trendingToday;
     popularMovies = sections.popularMovies;
     popularTvShows = sections.popularTvShows;

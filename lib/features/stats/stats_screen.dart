@@ -52,6 +52,21 @@ class StatsScreen extends StatelessWidget {
                 label: 'Completed',
                 value: watchlist.completedCount.toString(),
               ),
+              _StatTile(
+                icon: Icons.play_circle_outline,
+                label: 'Watching',
+                value: watchlist.watchingCount.toString(),
+              ),
+              _StatTile(
+                icon: Icons.schedule_outlined,
+                label: 'Planned',
+                value: watchlist.plannedCount.toString(),
+              ),
+              _StatTile(
+                icon: Icons.access_time_outlined,
+                label: 'Watch time',
+                value: watchlist.estimatedWatchTimeLabel,
+              ),
               const SizedBox(height: 8),
               const SectionHeader(
                 title: 'Quick Insights',

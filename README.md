@@ -1,17 +1,89 @@
-# my_tracker
+# WatchNest
 
-A new Flutter project.
+WatchNest is a Flutter media tracker that helps you organize movies, TV shows, favorites, and watch progress in one place. The app follows a clean architecture with Provider-based state management and a repository-style data layer for TMDB-backed content.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Browse popular movies, TV shows, and trending titles
+- Search the TMDB catalog
+- Save titles to a watchlist
+- Mark items as watching, completed, planned, or dropped
+- Keep favorites synced and persisted across restarts
+- View real library statistics from your saved data
 
-A few resources to get you started if this is your first Flutter project:
+## Screenshots
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Add screenshots to the screenshots/ folder and reference them here when available.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech Stack
+
+- Flutter
+- Provider
+- Dio
+- SharedPreferences
+- Firebase Auth
+- TMDB API
+
+## Architecture Overview
+
+The app is organized into feature-based layers:
+
+- presentation: screens and widgets
+- domain: entities and use cases
+- data: repositories and remote data sources
+- core: networking, persistence, and shared constants
+
+## Installation
+
+1. Install Flutter 3.12 or newer.
+2. Clone the repository.
+3. Run:
+
+   flutter pub get
+
+## Environment Variables
+
+The app reads the TMDB bearer token from a build-time define:
+
+- `--dart-define=TMDB_TOKEN=your_token`
+- `--dart-define-from-file=.env.json`
+
+Create a `.env.json` file in the project root with this structure:
+
+```json
+{
+  "TMDB_TOKEN": "YOUR_TMDB_BEARER_TOKEN"
+}
+```
+
+The file is ignored by Git so your real token never gets committed.
+
+## Running the App
+
+From the project root, run:
+
+```bash
+flutter run
+```
+
+VS Code launch configuration is already set up to pass `--dart-define-from-file=.env.json` automatically when you press F5 or use Run.
+
+## Building APKs
+
+To build an APK, run:
+
+```bash
+flutter build apk
+```
+
+The build uses the same `.env.json` file automatically when the app is launched or built from VS Code.
+
+## Roadmap
+
+- Improve onboarding and empty states
+- Add richer media filters and sorting
+- Expand stats with weekly and monthly insights
+
+## License
+
+This project is licensed under the MIT License.

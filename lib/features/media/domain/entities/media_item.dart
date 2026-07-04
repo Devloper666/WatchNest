@@ -10,6 +10,8 @@ class MediaItem {
     this.backdropPath,
     this.releaseDate,
     this.voteAverage = 0,
+    this.genres = const [],
+    this.runtimeMinutes = 0,
   });
 
   final int id;
@@ -20,6 +22,8 @@ class MediaItem {
   final String? backdropPath;
   final String? releaseDate;
   final double voteAverage;
+  final List<String> genres;
+  final int runtimeMinutes;
 
   String get heroTag => 'media-$id-${mediaType.name}';
 

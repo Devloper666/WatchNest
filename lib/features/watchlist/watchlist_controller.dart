@@ -1,8 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/persistence/media_persistence.dart';
 import '../media/domain/entities/media_item.dart';
 
 enum WatchStatus { watching, completed, planned, dropped }
@@ -27,7 +25,7 @@ class WatchlistController extends ChangeNotifier {
   final Map<int, WatchStatus> _statuses = {};
   final Set<int> _favorites = {};
   late final Future<void> ready;
-  SharedPreferences? _prefs;
+  MediaPersistenceService? _persistence;
 
   List<MediaItem> get items => List.unmodifiable(_items.values);
 
@@ -44,69 +42,35 @@ class WatchlistController extends ChangeNotifier {
   }
 
   Future<void> _hydrate() async {
-    _prefs = await SharedPreferences.getInstance();
-    final rawItems = _prefs!.getString('watchlist_items');
-    final rawStatuses = _prefs!.getString('watchlist_statuses');
-
-    if (rawItems != null) {
-      final decoded = jsonDecode(rawItems) as List<dynamic>;
-      for (final entry in decoded) {
-        final map = entry as Map<String, dynamic>;
-        final item = MediaItem(
-          id: map['id'] as int? ?? 0,
-          title: map['title'] as String? ?? 'Untitled',
-          overview: map['overview'] as String? ?? '',
-          mediaType: MediaType.values.firstWhere(
-            (type) => type.name == map['mediaType'],
-            orElse: () => MediaType.unknown,
-          ),
-          posterPath: map['posterPath'] as String?,
-          backdropPath: map['backdropPath'] as String?,
-          releaseDate: map['releaseDate'] as String?,
-          voteAverage: (map['voteAverage'] as num?)?.toDouble() ?? 0,
-        );
-        _items[item.id] = item;
-      }
+    _persistence = await MediaPersistenceService.create();
+    final savedItems = _persistence!.readMediaItems('watchlist_items');
+    for (final item in savedItems) {
+      _items[item.id] = item;
     }
 
-    if (rawStatuses != null) {
-      final decoded = jsonDecode(rawStatuses) as Map<String, dynamic>;
-      for (final entry in decoded.entries) {
-        final status = WatchStatus.values.firstWhere(
-          (value) => value.name == entry.value,
-          orElse: () => WatchStatus.planned,
-        );
-        _statuses[int.parse(entry.key)] = status;
-      }
+    final savedStatuses = _persistence!.readStringMap('watchlist_statuses');
+    for (final entry in savedStatuses.entries) {
+      final status = WatchStatus.values.firstWhere(
+        (value) => value.name == entry.value,
+        orElse: () => WatchStatus.planned,
+      );
+      _statuses[entry.key] = status;
     }
+
+    _favorites.addAll(_persistence!.readIntSet('watchlist_favorites'));
 
     notifyListeners();
   }
 
   Future<void> _persist() async {
-    final prefs = _prefs ?? await SharedPreferences.getInstance();
-    _prefs = prefs;
-    await prefs.setString(
-      'watchlist_items',
-      jsonEncode(
-        _items.values.map((item) => {
-          'id': item.id,
-          'title': item.title,
-          'overview': item.overview,
-          'mediaType': item.mediaType.name,
-          'posterPath': item.posterPath,
-          'backdropPath': item.backdropPath,
-          'releaseDate': item.releaseDate,
-          'voteAverage': item.voteAverage,
-        }).toList(),
-      ),
-    );
-    await prefs.setString(
+    final persistence = _persistence ?? await MediaPersistenceService.create();
+    _persistence = persistence;
+    await persistence.saveMediaItems('watchlist_items', _items.values);
+    await persistence.saveStringMap(
       'watchlist_statuses',
-      jsonEncode(
-        _statuses.map((key, value) => MapEntry(key.toString(), value.name)),
-      ),
+      _statuses.map((key, value) => MapEntry(key, value.name)),
     );
+    await persistence.saveIntSet('watchlist_favorites', _favorites);
   }
 
   Future<void> toggle(MediaItem item, {WatchStatus status = WatchStatus.planned}) async {
@@ -168,6 +132,10 @@ class WatchlistController extends ChangeNotifier {
 
   int get favoriteCount => _favorites.length;
 
+  int get watchingCount => byStatus(WatchStatus.watching).length;
+
+  int get plannedCount => byStatus(WatchStatus.planned).length;
+
   double get averageRating {
     if (items.isEmpty) {
       return 0;
@@ -188,17 +156,56 @@ class WatchlistController extends ChangeNotifier {
     return completedCount / items.length;
   }
 
-  int get estimatedHoursWatched {
-    return completedCount * 2;
+  int get estimatedWatchMinutes {
+    return items.fold<int>(0, (sum, item) {
+      final status = _statuses[item.id] ?? WatchStatus.planned;
+      if (status == WatchStatus.completed) {
+        return sum + (item.runtimeMinutes > 0 ? item.runtimeMinutes : _estimateRuntimeMinutes(item));
+      }
+      if (status == WatchStatus.watching) {
+        return sum + ((item.runtimeMinutes > 0 ? item.runtimeMinutes : _estimateRuntimeMinutes(item)) ~/ 2);
+      }
+      return sum;
+    });
+  }
+
+  String get estimatedWatchTimeLabel {
+    final totalMinutes = estimatedWatchMinutes;
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes % 60;
+    if (hours > 0 && minutes > 0) {
+      return '${hours}h ${minutes}m';
+    }
+    if (hours > 0) {
+      return '${hours}h';
+    }
+    return '${minutes}m';
   }
 
   String get favoriteGenre {
-    if (items.isEmpty) {
-      return 'Action';
+    final favoriteItems = items.where((item) => _favorites.contains(item.id)).toList();
+    if (favoriteItems.isEmpty) {
+      return 'No favorites';
     }
-    if (seriesCount > movieCount) {
-      return 'Drama';
+
+    final genreCounts = <String, int>{};
+    for (final item in favoriteItems) {
+      for (final genre in item.genres) {
+        if (genre.isEmpty) {
+          continue;
+        }
+        genreCounts[genre] = (genreCounts[genre] ?? 0) + 1;
+      }
     }
-    return 'Cinema';
+
+    if (genreCounts.isEmpty) {
+      return favoriteItems.first.mediaType == MediaType.tv ? 'Drama' : 'Action';
+    }
+
+    return genreCounts.entries.reduce((best, entry) => entry.value > best.value ? entry : best).key;
+  }
+
+  int _estimateRuntimeMinutes(MediaItem item) {
+    return item.mediaType == MediaType.tv ? 45 : 120;
   }
 }

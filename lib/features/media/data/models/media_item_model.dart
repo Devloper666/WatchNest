@@ -11,6 +11,8 @@ class MediaItemModel extends MediaItem {
     super.backdropPath,
     super.releaseDate,
     super.voteAverage,
+    super.genres,
+    super.runtimeMinutes,
   });
 
   factory MediaItemModel.fromJson(
@@ -24,6 +26,16 @@ class MediaItemModel extends MediaItem {
     final title = json['title'] ?? json['name'] ?? json['original_name'];
     final posterPath = json['poster_path'] ?? json['profile_path'];
 
+    final genres = (json['genres'] as List<dynamic>?)
+            ?.whereType<Map<String, dynamic>>()
+            .map((genre) => genre['name'] as String? ?? '')
+            .where((name) => name.isNotEmpty)
+            .toList() ??
+        <String>[];
+    final runtimeMinutes = (json['runtime'] as num?)?.toInt() ??
+        (json['episode_run_time'] as List<dynamic>?)?.whereType<num>().firstOrNull?.toInt() ??
+        0;
+
     return MediaItemModel(
       id: json['id'] as int? ?? 0,
       title: title as String? ?? 'Untitled',
@@ -33,6 +45,8 @@ class MediaItemModel extends MediaItem {
       backdropPath: _fullImagePath(json['backdrop_path'] as String?),
       releaseDate: json['release_date'] ?? json['first_air_date'],
       voteAverage: (json['vote_average'] as num?)?.toDouble() ?? 0,
+      genres: genres,
+      runtimeMinutes: runtimeMinutes,
     );
   }
 

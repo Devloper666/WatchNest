@@ -48,4 +48,37 @@ void main() {
       WatchStatus.watching,
     );
   });
+
+  test('restores persisted favorites alongside the watchlist', () async {
+    SharedPreferences.setMockInitialValues({
+      'watchlist_items': jsonEncode([
+        {
+          'id': 2,
+          'title': 'Interstellar',
+          'overview': 'Space',
+          'mediaType': 'movie',
+          'voteAverage': 8.6,
+          'releaseDate': '2014-11-07',
+        }
+      ]),
+      'watchlist_statuses': jsonEncode({'2': 'planned'}),
+      'watchlist_favorites': jsonEncode([2]),
+    });
+
+    final controller = WatchlistController();
+    await controller.ready;
+
+    final item = const MediaItem(
+      id: 2,
+      title: 'Interstellar',
+      overview: 'Space',
+      mediaType: MediaType.movie,
+      releaseDate: '2014-11-07',
+      voteAverage: 8.6,
+    );
+
+    expect(controller.items, hasLength(1));
+    expect(controller.isFavorite(item), isTrue);
+    expect(controller.favoriteCount, 1);
+  });
 }
