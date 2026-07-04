@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../shared/widgets/section_header.dart';
 import '../watchlist/watchlist_controller.dart';
+import 'version_label.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -40,6 +41,37 @@ class StatsScreen extends StatelessWidget {
                 icon: Icons.star_border,
                 label: 'Average rating',
                 value: watchlist.averageRating.toStringAsFixed(1),
+              ),
+              _StatTile(
+                icon: Icons.favorite_border,
+                label: 'Favorites',
+                value: watchlist.favoriteCount.toString(),
+              ),
+              _StatTile(
+                icon: Icons.check_circle_outline,
+                label: 'Completed',
+                value: watchlist.completedCount.toString(),
+              ),
+              const SizedBox(height: 8),
+              const SectionHeader(
+                title: 'Quick Insights',
+                subtitle: 'A snapshot of your library habits',
+              ),
+              const SizedBox(height: 8),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.auto_awesome_outlined),
+                  title: const Text('Favorite genre'),
+                  trailing: Text(watchlist.favoriteGenre),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text('Version'),
+                  trailing: const VersionLabel(),
+                ),
               ),
             ],
           );

@@ -1,4 +1,5 @@
 import 'media_item.dart';
+import 'media_video.dart';
 
 class MediaDetails {
   const MediaDetails({
@@ -8,6 +9,18 @@ class MediaDetails {
     required this.cast,
     required this.director,
     required this.similar,
+    required this.recommendations,
+    required this.productionCompanies,
+    required this.externalLinks,
+    required this.videos,
+    required this.creators,
+    required this.writers,
+    required this.seasons,
+    required this.episodesCount,
+    required this.status,
+    required this.firstAirDate,
+    required this.lastAirDate,
+    required this.networks,
     this.trailerKey,
   });
 
@@ -17,6 +30,18 @@ class MediaDetails {
   final List<String> cast;
   final String director;
   final List<MediaItem> similar;
+  final List<MediaItem> recommendations;
+  final List<String> productionCompanies;
+  final List<String> externalLinks;
+  final List<MediaVideo> videos;
+  final List<String> creators;
+  final List<String> writers;
+  final int seasons;
+  final int episodesCount;
+  final String status;
+  final String? firstAirDate;
+  final String? lastAirDate;
+  final List<String> networks;
   final String? trailerKey;
 
   String get runtimeLabel {
@@ -33,4 +58,6 @@ class MediaDetails {
     }
     return '${hours}h ${minutes}m';
   }
+
+  bool get hasTvDetails => item.mediaType == MediaType.tv;
 }

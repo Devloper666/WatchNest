@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../features/media/domain/entities/media_item.dart';
+import 'continue_watching_controller.dart';
 import '../../shared/widgets/empty_state.dart';
 import '../../shared/widgets/media_poster_card.dart';
 import '../../shared/widgets/section_header.dart';
@@ -60,11 +61,18 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     const _GreetingHeader(),
                     const SizedBox(height: 30),
-                    _MediaCarousel(
-                      title: 'Continue Watching',
-                      items: controller.continueWatching,
-                      cardWidth: cardWidth,
-                      railHeight: railHeight,
+                    Consumer<ContinueWatchingController>(
+                      builder: (context, continueWatching, _) {
+                        final items = continueWatching.items;
+                        return items.isEmpty
+                            ? const SizedBox.shrink()
+                            : _MediaCarousel(
+                                title: 'Continue Watching',
+                                items: items,
+                                cardWidth: cardWidth,
+                                railHeight: railHeight,
+                              );
+                      },
                     ),
                     _MediaCarousel(
                       title: 'Trending Today',

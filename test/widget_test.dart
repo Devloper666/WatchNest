@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_tracker/app/watchnest_app.dart';
+import 'package:my_tracker/features/home/continue_watching_controller.dart';
 import 'package:my_tracker/features/home/home_controller.dart';
+import 'package:my_tracker/features/media/domain/entities/media_details.dart';
 import 'package:my_tracker/features/media/domain/entities/media_item.dart';
 import 'package:my_tracker/features/media/domain/repositories/media_repository.dart';
 import 'package:my_tracker/features/media/domain/usecases/get_home_media_sections.dart';
@@ -19,6 +21,7 @@ void main() {
         providers: [
           Provider<MediaRepository>.value(value: repository),
           ChangeNotifierProvider(create: (_) => WatchlistController()),
+          ChangeNotifierProvider(create: (_) => ContinueWatchingController()),
           ChangeNotifierProvider(
             create: (_) => HomeController(
               getHomeMediaSections: GetHomeMediaSections(repository),
@@ -58,6 +61,7 @@ void main() {
           providers: [
             Provider<MediaRepository>.value(value: repository),
             ChangeNotifierProvider(create: (_) => WatchlistController()),
+            ChangeNotifierProvider(create: (_) => ContinueWatchingController()),
             ChangeNotifierProvider(
               create: (_) => HomeController(
                 getHomeMediaSections: GetHomeMediaSections(repository),
@@ -136,5 +140,30 @@ class _FakeMediaRepository implements MediaRepository {
   @override
   Future<List<MediaItem>> search(String query) async {
     return const [];
+  }
+
+  @override
+  Future<MediaDetails> getDetails(MediaItem item) async {
+    return MediaDetails(
+      item: item,
+      runtimeMinutes: 120,
+      genres: const ['Drama'],
+      cast: const ['Actor'],
+      director: 'Director',
+      similar: const [],
+      recommendations: const [],
+      productionCompanies: const [],
+      externalLinks: const [],
+      videos: const [],
+      creators: const [],
+      writers: const [],
+      seasons: 0,
+      episodesCount: 0,
+      status: 'Released',
+      firstAirDate: null,
+      lastAirDate: null,
+      networks: const [],
+      trailerKey: null,
+    );
   }
 }

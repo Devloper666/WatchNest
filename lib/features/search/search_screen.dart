@@ -84,7 +84,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<SearchSort>(
-                      value: controller.sort,
+                      initialValue: controller.sort,
                       decoration: const InputDecoration(
                         labelText: 'Sort by',
                         prefixIcon: Icon(Icons.sort_rounded),

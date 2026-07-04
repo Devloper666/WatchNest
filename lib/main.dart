@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'app/watchnest_app.dart';
 import 'core/network/dio_client.dart';
+import 'features/home/continue_watching_controller.dart';
 import 'features/home/home_controller.dart';
 import 'features/media/data/datasources/tmdb_remote_data_source.dart';
 import 'features/media/data/repositories/media_repository_impl.dart';
@@ -23,6 +24,9 @@ void main() {
         Provider<MediaRepository>.value(value: mediaRepository),
         ChangeNotifierProvider(
           create: (_) => WatchlistController(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ContinueWatchingController(),
         ),
         ChangeNotifierProvider(
           create: (_) => HomeController(

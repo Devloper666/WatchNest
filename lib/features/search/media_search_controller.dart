@@ -17,6 +17,9 @@ class MediaSearchController extends ChangeNotifier {
   String? errorMessage;
   SearchFilter filter = SearchFilter.all;
   SearchSort sort = SearchSort.popular;
+  int page = 1;
+  bool hasMore = false;
+  String _lastQuery = '';
 
   List<MediaItem> get results {
     final filtered = _results.where((item) {
@@ -43,18 +46,50 @@ class MediaSearchController extends ChangeNotifier {
     if (trimmedQuery.isEmpty) {
       _results = [];
       errorMessage = null;
+      page = 1;
+      hasMore = false;
+      _lastQuery = '';
       notifyListeners();
       return;
     }
 
+    if (trimmedQuery != _lastQuery) {
+      page = 1;
+      _results = [];
+    }
+
+    _lastQuery = trimmedQuery;
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
-      _results = await searchMedia(trimmedQuery);
+      final results = await searchMedia(trimmedQuery);
+      _results = results;
+      hasMore = results.length >= 20;
     } catch (_) {
       errorMessage = 'Search failed. Try another title.';
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (isLoading || !hasMore || _lastQuery.isEmpty) {
+      return;
+    }
+
+    page += 1;
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final results = await searchMedia(_lastQuery);
+      _results = [..._results, ...results];
+      hasMore = results.length >= 20;
+    } catch (_) {
+      page = page > 1 ? page - 1 : 1;
     } finally {
       isLoading = false;
       notifyListeners();

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../media/domain/entities/media_item.dart';
 
@@ -16,9 +19,15 @@ extension WatchStatusLabel on WatchStatus {
 }
 
 class WatchlistController extends ChangeNotifier {
+  WatchlistController() {
+    ready = _hydrate();
+  }
+
   final Map<int, MediaItem> _items = {};
   final Map<int, WatchStatus> _statuses = {};
   final Set<int> _favorites = {};
+  late final Future<void> ready;
+  SharedPreferences? _prefs;
 
   List<MediaItem> get items => List.unmodifiable(_items.values);
 
@@ -34,7 +43,73 @@ class WatchlistController extends ChangeNotifier {
     return _statuses[item.id] ?? WatchStatus.planned;
   }
 
-  void toggle(MediaItem item, {WatchStatus status = WatchStatus.planned}) {
+  Future<void> _hydrate() async {
+    _prefs = await SharedPreferences.getInstance();
+    final rawItems = _prefs!.getString('watchlist_items');
+    final rawStatuses = _prefs!.getString('watchlist_statuses');
+
+    if (rawItems != null) {
+      final decoded = jsonDecode(rawItems) as List<dynamic>;
+      for (final entry in decoded) {
+        final map = entry as Map<String, dynamic>;
+        final item = MediaItem(
+          id: map['id'] as int? ?? 0,
+          title: map['title'] as String? ?? 'Untitled',
+          overview: map['overview'] as String? ?? '',
+          mediaType: MediaType.values.firstWhere(
+            (type) => type.name == map['mediaType'],
+            orElse: () => MediaType.unknown,
+          ),
+          posterPath: map['posterPath'] as String?,
+          backdropPath: map['backdropPath'] as String?,
+          releaseDate: map['releaseDate'] as String?,
+          voteAverage: (map['voteAverage'] as num?)?.toDouble() ?? 0,
+        );
+        _items[item.id] = item;
+      }
+    }
+
+    if (rawStatuses != null) {
+      final decoded = jsonDecode(rawStatuses) as Map<String, dynamic>;
+      for (final entry in decoded.entries) {
+        final status = WatchStatus.values.firstWhere(
+          (value) => value.name == entry.value,
+          orElse: () => WatchStatus.planned,
+        );
+        _statuses[int.parse(entry.key)] = status;
+      }
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> _persist() async {
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    await prefs.setString(
+      'watchlist_items',
+      jsonEncode(
+        _items.values.map((item) => {
+          'id': item.id,
+          'title': item.title,
+          'overview': item.overview,
+          'mediaType': item.mediaType.name,
+          'posterPath': item.posterPath,
+          'backdropPath': item.backdropPath,
+          'releaseDate': item.releaseDate,
+          'voteAverage': item.voteAverage,
+        }).toList(),
+      ),
+    );
+    await prefs.setString(
+      'watchlist_statuses',
+      jsonEncode(
+        _statuses.map((key, value) => MapEntry(key.toString(), value.name)),
+      ),
+    );
+  }
+
+  Future<void> toggle(MediaItem item, {WatchStatus status = WatchStatus.planned}) async {
     if (contains(item)) {
       _items.remove(item.id);
       _statuses.remove(item.id);
@@ -44,25 +119,28 @@ class WatchlistController extends ChangeNotifier {
       _statuses[item.id] = status;
     }
     notifyListeners();
+    await _persist();
   }
 
-  void add(MediaItem item, {WatchStatus status = WatchStatus.planned}) {
+  Future<void> add(MediaItem item, {WatchStatus status = WatchStatus.planned}) async {
     _items[item.id] = item;
     _statuses[item.id] = status;
     notifyListeners();
+    await _persist();
   }
 
-  void move(MediaItem item, WatchStatus status) {
+  Future<void> move(MediaItem item, WatchStatus status) async {
     _items[item.id] = item;
     _statuses[item.id] = status;
     notifyListeners();
+    await _persist();
   }
 
-  void markWatched(MediaItem item) {
-    move(item, WatchStatus.completed);
+  Future<void> markWatched(MediaItem item) async {
+    await move(item, WatchStatus.completed);
   }
 
-  void toggleFavorite(MediaItem item) {
+  Future<void> toggleFavorite(MediaItem item) async {
     _items[item.id] = item;
     if (_favorites.contains(item.id)) {
       _favorites.remove(item.id);
@@ -71,6 +149,7 @@ class WatchlistController extends ChangeNotifier {
     }
     _statuses.putIfAbsent(item.id, () => WatchStatus.planned);
     notifyListeners();
+    await _persist();
   }
 
   List<MediaItem> byStatus(WatchStatus status) {
@@ -86,6 +165,8 @@ class WatchlistController extends ChangeNotifier {
   int get seriesCount {
     return items.where((item) => item.mediaType == MediaType.tv).length;
   }
+
+  int get favoriteCount => _favorites.length;
 
   double get averageRating {
     if (items.isEmpty) {

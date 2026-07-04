@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../shared/widgets/animated_watchlist_button.dart';
 import '../../shared/widgets/media_poster_card.dart';
@@ -202,8 +203,65 @@ class _DetailsBody extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 24),
+        if (details.item.mediaType == MediaType.tv) ...[
+          _InfoLine(label: 'Status', value: details.status.isEmpty ? 'TBA' : details.status),
+          _InfoLine(
+            label: 'Seasons',
+            value: details.seasons > 0 ? details.seasons.toString() : 'TBA',
+          ),
+          _InfoLine(
+            label: 'Episodes',
+            value: details.episodesCount > 0 ? details.episodesCount.toString() : 'TBA',
+          ),
+          _InfoLine(
+            label: 'First air date',
+            value: details.firstAirDate ?? 'TBA',
+          ),
+          _InfoLine(
+            label: 'Last air date',
+            value: details.lastAirDate ?? 'TBA',
+          ),
+          _InfoLine(
+            label: 'Networks',
+            value: details.networks.isEmpty ? 'TBA' : details.networks.join(', '),
+          ),
+          _InfoLine(
+            label: 'Creators',
+            value: details.creators.isEmpty ? 'TBA' : details.creators.join(', '),
+          ),
+        ] else ...[
+          _InfoLine(label: 'Release date', value: item.releaseDate ?? 'TBA'),
+          _InfoLine(label: 'Runtime', value: details.runtimeLabel),
+        ],
         _InfoLine(label: 'Cast', value: details.cast.join(', ')),
         _InfoLine(label: 'Director', value: details.director),
+        _InfoLine(
+          label: 'Writers',
+          value: details.writers.isEmpty ? 'TBA' : details.writers.join(', '),
+        ),
+        if (details.productionCompanies.isNotEmpty)
+          _InfoLine(
+            label: 'Production',
+            value: details.productionCompanies.join(', '),
+          ),
+        if (details.externalLinks.isNotEmpty)
+          _InfoLine(label: 'Links', value: details.externalLinks.join(', ')),
+        const SizedBox(height: 24),
+        if (details.videos.isNotEmpty) ...[
+          const SectionHeader(title: 'Videos'),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: details.videos.map((video) {
+              return OutlinedButton.icon(
+                onPressed: () => launchUrl(Uri.parse(video.watchUrl)),
+                icon: const Icon(Icons.play_circle_outline),
+                label: Text(video.name),
+              );
+            }).toList(),
+          ),
+        ],
         const SizedBox(height: 24),
         if (details.similar.isNotEmpty) ...[
           const SectionHeader(title: 'Similar Titles'),
@@ -218,6 +276,26 @@ class _DetailsBody extends StatelessWidget {
               itemBuilder: (context, index) {
                 return MediaPosterCard(
                   item: details.similar[index],
+                  width: 148,
+                );
+              },
+            ),
+          ),
+        ],
+        if (details.recommendations.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          const SectionHeader(title: 'Recommended for You'),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 230,
+            child: ListView.separated(
+              clipBehavior: Clip.none,
+              scrollDirection: Axis.horizontal,
+              itemCount: details.recommendations.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 14),
+              itemBuilder: (context, index) {
+                return MediaPosterCard(
+                  item: details.recommendations[index],
                   width: 148,
                 );
               },
@@ -303,7 +381,7 @@ class _MetaWrap extends StatelessWidget {
       item.voteAverage.toStringAsFixed(1),
       item.year,
       item.typeLabel,
-      if (runtime != null) runtime!,
+      ?runtime,
     ];
     return Wrap(
       spacing: 8,

@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  ThemeMode _themeMode = ThemeMode.dark;
+  String _version = '—';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _version = info.version);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,10 +77,36 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const _ProfileAction(icon: Icons.dark_mode_outlined, title: 'Dark theme'),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.dark_mode_outlined),
+              title: const Text('Theme'),
+              subtitle: const Text('Dark / Light / System'),
+              trailing: DropdownButton<ThemeMode>(
+                value: _themeMode,
+                items: const [
+                  DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
+                  DropdownMenuItem(value: ThemeMode.light, child: Text('Light')),
+                  DropdownMenuItem(value: ThemeMode.system, child: Text('System')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _themeMode = value);
+                  }
+                },
+              ),
+            ),
+          ),
           const _ProfileAction(icon: Icons.notifications_none, title: 'Notifications'),
           const _ProfileAction(icon: Icons.settings_outlined, title: 'Settings'),
           const _ProfileAction(icon: Icons.info_outline, title: 'About WatchNest'),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Version'),
+              trailing: Text(_version),
+            ),
+          ),
         ],
       ),
     );

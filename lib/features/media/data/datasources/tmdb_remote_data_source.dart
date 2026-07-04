@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../domain/entities/media_details.dart';
 import '../../domain/entities/media_item.dart';
+import '../../domain/entities/media_video.dart';
 import '../models/media_item_model.dart';
 
 class TmdbRemoteDataSource {
@@ -104,6 +105,22 @@ class TmdbRemoteDataSource {
     final videoResults = videos['results'] as List<dynamic>? ?? [];
     final similar = data['similar'] as Map<String, dynamic>? ?? {};
 
+    final productionCompanies = data['production_companies'] as List<dynamic>? ?? [];
+    final externalIds = data['external_ids'] as Map<String, dynamic>? ?? {};
+    final homepage = data['homepage'] as String?;
+    final imdbId = externalIds['imdb_id'] as String?;
+    final videosList = videoResults
+        .whereType<Map<String, dynamic>>()
+        .map((video) => MediaVideo(
+              name: video['name'] as String? ?? 'Trailer',
+              key: video['key'] as String? ?? '',
+              type: video['type'] as String? ?? 'Trailer',
+              site: video['site'] as String? ?? 'YouTube',
+            ))
+        .where((video) => video.key.isNotEmpty)
+        .take(8)
+        .toList();
+
     return MediaDetails(
       item: detailedItem,
       runtimeMinutes: _runtimeFromJson(data),
@@ -115,8 +132,32 @@ class TmdbRemoteDataSource {
           .take(8)
           .toList(),
       director: _directorFromCrew(crew, fallbackType),
-      trailerKey: _trailerKey(videoResults),
       similar: _readResults(similar, fallbackType: fallbackType).take(12).toList(),
+      recommendations: _readResults(
+        data['recommendations'] as Map<String, dynamic>? ?? {},
+        fallbackType: fallbackType,
+      ).take(12).toList(),
+      productionCompanies: productionCompanies
+          .whereType<Map<String, dynamic>>()
+          .map((company) => company['name'] as String? ?? '')
+          .where((name) => name.isNotEmpty)
+          .take(6)
+          .toList(),
+      externalLinks: [
+        if (homepage != null && homepage.isNotEmpty) homepage,
+        if (imdbId != null && imdbId.isNotEmpty) 'IMDb: $imdbId',
+      ],
+      videos: videosList,
+      creators: _peopleFromJson(data['created_by']),
+      writers: _peopleFromJson(data['credits']?['crew'] as List<dynamic>? ?? [],
+          jobFilter: 'Writer'),
+      seasons: (data['number_of_seasons'] as num?)?.toInt() ?? 0,
+      episodesCount: (data['number_of_episodes'] as num?)?.toInt() ?? 0,
+      status: data['status'] as String? ?? 'Unknown',
+      firstAirDate: data['first_air_date'] as String?,
+      lastAirDate: data['last_air_date'] as String?,
+      networks: _networksFromJson(data['networks']),
+      trailerKey: _trailerKey(videoResults),
     );
   }
 
@@ -164,6 +205,27 @@ class TmdbRemoteDataSource {
           orElse: () => const {},
         );
     return creator['name'] as String? ?? (type == MediaType.tv ? 'Series team' : 'Director TBA');
+  }
+
+  List<String> _peopleFromJson(Object? source, {String? jobFilter}) {
+    if (source is List<dynamic>) {
+      return source.whereType<Map<String, dynamic>>().where((person) {
+        if (jobFilter == null) {
+          return true;
+        }
+        return person['job'] == jobFilter;
+      }).map((person) => person['name'] as String? ?? '').where((name) => name.isNotEmpty).toList();
+    }
+    if (source is Map<String, dynamic>) {
+      final creators = source['created_by'] as List<dynamic>? ?? [];
+      return creators.whereType<Map<String, dynamic>>().map((person) => person['name'] as String? ?? '').where((name) => name.isNotEmpty).toList();
+    }
+    return [];
+  }
+
+  List<String> _networksFromJson(Object? source) {
+    final networks = source as List<dynamic>? ?? [];
+    return networks.whereType<Map<String, dynamic>>().map((network) => network['name'] as String? ?? '').where((name) => name.isNotEmpty).toList();
   }
 
   String? _trailerKey(List<dynamic> videos) {
