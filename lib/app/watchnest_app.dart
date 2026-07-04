@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_theme.dart';
-import 'watchnest_shell.dart';
+import '../features/auth/presentation/auth_gate.dart';
 
 class WatchNestApp extends StatelessWidget {
   const WatchNestApp({super.key});
@@ -13,7 +13,7 @@ class WatchNestApp extends StatelessWidget {
       title: 'WatchNest',
       themeMode: ThemeMode.dark,
       theme: AppTheme.darkTheme,
-      home: const WatchNestShell(),
+      home: const AuthGate(),
     );
   }
 }

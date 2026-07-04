@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_tracker/app/watchnest_app.dart';
+import 'package:my_tracker/features/auth/domain/repositories/auth_repository.dart';
+import 'package:my_tracker/features/auth/domain/usecases/register_with_email_and_password.dart';
+import 'package:my_tracker/features/auth/domain/usecases/send_password_reset_email.dart';
+import 'package:my_tracker/features/auth/domain/usecases/sign_in_with_email_and_password.dart';
+import 'package:my_tracker/features/auth/domain/usecases/sign_in_with_google.dart';
+import 'package:my_tracker/features/auth/presentation/auth_controller.dart';
 import 'package:my_tracker/features/home/continue_watching_controller.dart';
 import 'package:my_tracker/features/home/home_controller.dart';
 import 'package:my_tracker/features/media/domain/entities/media_details.dart';
@@ -15,11 +21,13 @@ import 'package:provider/provider.dart';
 void main() {
   testWidgets('WatchNest shows bottom navigation', (tester) async {
     final repository = _FakeMediaRepository();
+    final authRepository = _FakeAuthRepository();
 
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           Provider<MediaRepository>.value(value: repository),
+          Provider<AuthRepository>.value(value: authRepository),
           ChangeNotifierProvider(create: (_) => WatchlistController()),
           ChangeNotifierProvider(create: (_) => ContinueWatchingController()),
           ChangeNotifierProvider(
@@ -30,6 +38,15 @@ void main() {
           ChangeNotifierProvider(
             create: (_) => MediaSearchController(
               searchMedia: SearchMedia(repository),
+            ),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => AuthController(
+              repository: authRepository,
+              signInWithEmailAndPassword: SignInWithEmailAndPassword(authRepository),
+              registerWithEmailAndPassword: RegisterWithEmailAndPassword(authRepository),
+              signInWithGoogle: SignInWithGoogle(authRepository),
+              sendPasswordResetEmail: SendPasswordResetEmail(authRepository),
             ),
           ),
         ],
@@ -47,6 +64,7 @@ void main() {
     tester,
   ) async {
     final repository = _FakeMediaRepository.withItems();
+    final authRepository = _FakeAuthRepository();
 
     for (final size in const [
       Size(300, 640),
@@ -60,6 +78,7 @@ void main() {
         MultiProvider(
           providers: [
             Provider<MediaRepository>.value(value: repository),
+            Provider<AuthRepository>.value(value: authRepository),
             ChangeNotifierProvider(create: (_) => WatchlistController()),
             ChangeNotifierProvider(create: (_) => ContinueWatchingController()),
             ChangeNotifierProvider(
@@ -70,6 +89,15 @@ void main() {
             ChangeNotifierProvider(
               create: (_) => MediaSearchController(
                 searchMedia: SearchMedia(repository),
+              ),
+            ),
+            ChangeNotifierProvider(
+              create: (_) => AuthController(
+                repository: authRepository,
+                signInWithEmailAndPassword: SignInWithEmailAndPassword(authRepository),
+                registerWithEmailAndPassword: RegisterWithEmailAndPassword(authRepository),
+                signInWithGoogle: SignInWithGoogle(authRepository),
+                sendPasswordResetEmail: SendPasswordResetEmail(authRepository),
               ),
             ),
           ],
@@ -84,6 +112,32 @@ void main() {
 
     addTearDown(() => tester.binding.setSurfaceSize(null));
   });
+}
+
+class _FakeAuthRepository implements AuthRepository {
+  @override
+  Stream<String?> authStateChanges() => Stream.value('test-user');
+
+  @override
+  Future<void> registerWithEmailAndPassword({required String email, required String password}) async {}
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) async {}
+
+  @override
+  Future<void> signInWithEmailAndPassword({required String email, required String password}) async {}
+
+  @override
+  Future<void> signInWithGoogle() async {}
+
+  @override
+  Future<void> signOut() async {}
+
+  @override
+  String? get currentUserEmail => 'test@example.com';
+
+  @override
+  String? get currentUserId => 'test-user';
 }
 
 class _FakeMediaRepository implements MediaRepository {

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../domain/repositories/auth_repository.dart';
@@ -9,15 +12,12 @@ import '../domain/usecases/sign_in_with_google.dart';
 class AuthController extends ChangeNotifier {
   AuthController({
     required AuthRepository repository,
-    required SignInWithEmailAndPassword signInWithEmailAndPassword,
-    required RegisterWithEmailAndPassword registerWithEmailAndPassword,
-    required SignInWithGoogle signInWithGoogle,
-    required SendPasswordResetEmail sendPasswordResetEmail,
-  })  : _repository = repository,
-        _signInWithEmailAndPassword = signInWithEmailAndPassword,
-        _registerWithEmailAndPassword = registerWithEmailAndPassword,
-        _signInWithGoogle = signInWithGoogle,
-        _sendPasswordResetEmail = sendPasswordResetEmail {
+    required this._signInWithEmailAndPassword,
+    required this._registerWithEmailAndPassword,
+    required this._signInWithGoogle,
+    required this._sendPasswordResetEmail,
+  })  : _repository = repository {
+    _userId = repository.currentUserId;
     _subscription = repository.authStateChanges().listen((userId) {
       _userId = userId;
       notifyListeners();

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
+
+import '../auth/presentation/auth_controller.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -29,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final authController = context.watch<AuthController>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
@@ -64,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'WatchNest member',
+                          authController.currentUserEmail ?? 'WatchNest member',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -100,6 +104,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const _ProfileAction(icon: Icons.notifications_none, title: 'Notifications'),
           const _ProfileAction(icon: Icons.settings_outlined, title: 'Settings'),
           const _ProfileAction(icon: Icons.info_outline, title: 'About WatchNest'),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Sign out'),
+              onTap: () async {
+                await authController.signOut();
+              },
+            ),
+          ),
           Card(
             child: ListTile(
               leading: const Icon(Icons.info_outline),
