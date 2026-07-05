@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:my_tracker/features/media/domain/entities/media_item.dart';
-import 'package:my_tracker/features/watchlist/watchlist_controller.dart';
+import 'package:watchnest/features/media/domain/entities/media_item.dart';
+import 'package:watchnest/features/watchlist/watchlist_controller.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

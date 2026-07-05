@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_tracker/app/watchnest_app.dart';
-import 'package:my_tracker/features/auth/domain/repositories/auth_repository.dart';
-import 'package:my_tracker/features/auth/domain/usecases/register_with_email_and_password.dart';
-import 'package:my_tracker/features/auth/domain/usecases/send_password_reset_email.dart';
-import 'package:my_tracker/features/auth/domain/usecases/sign_in_with_email_and_password.dart';
-import 'package:my_tracker/features/auth/domain/usecases/sign_in_with_google.dart';
-import 'package:my_tracker/features/auth/presentation/auth_controller.dart';
-import 'package:my_tracker/features/home/continue_watching_controller.dart';
-import 'package:my_tracker/features/home/home_controller.dart';
-import 'package:my_tracker/features/media/domain/entities/media_details.dart';
-import 'package:my_tracker/features/media/domain/entities/media_item.dart';
-import 'package:my_tracker/features/media/domain/repositories/media_repository.dart';
-import 'package:my_tracker/features/media/domain/usecases/get_home_media_sections.dart';
-import 'package:my_tracker/features/media/domain/usecases/search_media.dart';
-import 'package:my_tracker/features/search/media_search_controller.dart';
-import 'package:my_tracker/features/watchlist/watchlist_controller.dart';
+import 'package:watchnest/app/watchnest_app.dart';
+import 'package:watchnest/features/auth/domain/repositories/auth_repository.dart';
+import 'package:watchnest/features/auth/domain/usecases/register_with_email_and_password.dart';
+import 'package:watchnest/features/auth/domain/usecases/send_password_reset_email.dart';
+import 'package:watchnest/features/auth/domain/usecases/sign_in_with_email_and_password.dart';
+import 'package:watchnest/features/auth/domain/usecases/sign_in_with_google.dart';
+import 'package:watchnest/features/auth/presentation/auth_controller.dart';
+import 'package:watchnest/features/home/continue_watching_controller.dart';
+import 'package:watchnest/features/home/home_controller.dart';
+import 'package:watchnest/features/media/domain/entities/media_details.dart';
+import 'package:watchnest/features/media/domain/entities/media_item.dart';
+import 'package:watchnest/features/media/domain/repositories/media_repository.dart';
+import 'package:watchnest/features/media/domain/usecases/get_home_media_sections.dart';
+import 'package:watchnest/features/media/domain/usecases/search_media.dart';
+import 'package:watchnest/features/search/media_search_controller.dart';
+import 'package:watchnest/features/watchlist/watchlist_controller.dart';
 import 'package:provider/provider.dart';
 
 void main() {

@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'firebase_options.dart';
 import 'app/watchnest_app.dart';
 import 'core/network/dio_client.dart';
 import 'features/auth/data/datasources/firebase_auth_datasource.dart';
@@ -24,7 +24,9 @@ import 'features/watchlist/watchlist_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
 
   final dioClient = DioClient();
   final remoteDataSource = TmdbRemoteDataSource(dioClient.dio);

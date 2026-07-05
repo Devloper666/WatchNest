@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "633049195508",
+    "project_id": "watchnest-47958",
+    "storage_bucket": "watchnest-47958.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:633049195508:android:f9e8c8a8c4fc1a9c6f4fa1",
+        "android_client_info": {
+          "package_name": "com.devloper666.watchnest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "633049195508-gvbm7hpc8di6spcg4l9nustrnt7778j1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.devloper666.watchnest",
+            "certificate_hash": "92fd12bf4ba3838847f67bb1287cd90a0dea9e11"
+          }
+        },
+        {
+          "client_id": "633049195508-j26dutmkrj8j386fnnnulg73m7uhl6se.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkNrU34ZK_L1wYjsqPSMG2-pM7WTUiXIo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "633049195508-j26dutmkrj8j386fnnnulg73m7uhl6se.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

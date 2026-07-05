@@ -1,4 +1,4 @@
-package com.example.my_tracker
+package com.devloper666.watchnest
 
 import io.flutter.embedding.android.FlutterActivity
 

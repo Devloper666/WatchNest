@@ -24,6 +24,35 @@ Add screenshots to the screenshots/ folder and reference them here when availabl
 - Firebase Auth
 - TMDB API
 
+## Folder Structure
+
+```
+lib/
+├── app/
+│   ├── watchnest_app.dart
+│   └── watchnest_shell.dart
+├── core/
+│   ├── constants/
+│   ├── network/
+│   ├── persistence/
+│   └── theme/
+├── features/
+│   ├── auth/
+│   ├── details/
+│   ├── home/
+│   ├── media/
+│   ├── profile/
+│   ├── search/
+│   ├── stats/
+│   └── watchlist/
+├── models/
+├── screens/
+├── services/
+├── shared/
+│   └── widgets/
+└── main.dart
+```
+
 ## Architecture Overview
 
 The app is organized into feature-based layers:
@@ -41,7 +70,16 @@ The app is organized into feature-based layers:
 
    flutter pub get
 
-## Environment Variables
+## Firebase Setup
+
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com).
+2. Add Android and iOS apps to your Firebase project.
+3. Download the configuration files:
+   - `google-services.json` for Android → place in `android/app/`
+   - `GoogleService-Info.plist` for iOS → place in `ios/Runner/`
+4. Enable Authentication providers (Email/Password and Google Sign-In) in the Firebase console.
+
+## TMDB Setup
 
 The app reads the TMDB bearer token from a build-time define:
 
